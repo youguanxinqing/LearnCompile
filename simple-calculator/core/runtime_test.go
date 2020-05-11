@@ -29,8 +29,9 @@ func TestRuntime_evaluate(t *testing.T) {
 
 func TestRuntime_evaluate_parenthese(t *testing.T) {
 	parser := NewParser()
-	//root := parser.parse(`2 * (3 + 5) / 3`)
-	root := parser.parse(`(2 * 5) / 3`)
+	//root := parser.parse(`2 * 5 / 3`)
+	root := parser.parse(`1 + 2 + 3 * 4 / 3 - 1`)
+	//root := parser.parse(`(2 * 5) / 3`)
 	runtime := NewRuntime()
 	ret := runtime.evaluate(root)
 	if ret != nil {

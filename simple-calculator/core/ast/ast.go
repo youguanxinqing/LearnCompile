@@ -32,3 +32,9 @@ func (n *Node) ChildrenIndexOf(i int) *Node {
 	}
 	return n.children[i]
 }
+
+func (n *Node) SetChildren(i int, node *Node) {
+	if n.ChildrenIndexOf(i) != nil {
+		n.children[i] = node
+	}
+}

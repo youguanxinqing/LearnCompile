@@ -141,6 +141,28 @@ func (p *Parser) statement(tokens *token.List) (node *ast.Node) {
 	return
 }
 
+//func (p *Parser) addictionExpr(tokens *token.List) (node *ast.Node) {
+//	node = p.multiplicationExpr(tokens)
+//	child1 := node
+//
+//	tok := tokens.Peek()
+//	if tok == nil {
+//		return
+//	}
+//	if tok.Type() == token.Add || tok.Type() == token.Sub {
+//		node = ast.NewNode(ast.Additive, tok.Text())
+//		tokens.Next()
+//		child2 := p.addictionExpr(tokens)
+//		if child2 != nil {
+//			node.AddChild(child1)
+//			node.AddChild(child2)
+//		} else {
+//			panic(fmt.Sprintf("%s '%s'", "excepting IntLiteral, Id or expression behind", tok.Text()))
+//		}
+//	}
+//	return
+//}
+
 func (p *Parser) addictionExpr(tokens *token.List) (node *ast.Node) {
 	node = p.multiplicationExpr(tokens)
 	child1 := node
@@ -150,18 +172,48 @@ func (p *Parser) addictionExpr(tokens *token.List) (node *ast.Node) {
 		return
 	}
 	if tok.Type() == token.Add || tok.Type() == token.Sub {
-		node = ast.NewNode(ast.Additive, tok.Text())
+		opNode := ast.NewNode(ast.Additive, tok.Text())
 		tokens.Next()
 		child2 := p.addictionExpr(tokens)
 		if child2 != nil {
-			node.AddChild(child1)
-			node.AddChild(child2)
+			opNode.AddChild(child1)
+			if len(child2.Children()) > 0 {
+				leftChild := child2.ChildrenIndexOf(0)
+				opNode.AddChild(leftChild)
+				child2.SetChildren(0, opNode)
+				opNode = child2
+			} else {
+				opNode.AddChild(child2)
+			}
 		} else {
 			panic(fmt.Sprintf("%s '%s'", "excepting IntLiteral, Id or expression behind", tok.Text()))
 		}
+		node = opNode
 	}
 	return
 }
+
+//func (p *Parser) multiplicationExpr(tokens *token.List) (node *ast.Node) {
+//	child1 := p.primary(tokens)
+//	node = child1
+//
+//	tok := tokens.Peek()
+//	if tok == nil {
+//		return
+//	}
+//	if tok.Type() == token.Mul || tok.Type() == token.Div {
+//		node = ast.NewNode(ast.Multiplicative, tok.Text())
+//		tokens.Next()
+//		child2 := p.multiplicationExpr(tokens)
+//		if child2 != nil {
+//			node.AddChild(child1)
+//			node.AddChild(child2)
+//		} else {
+//			panic(fmt.Sprintf("%s '%s'", "excepting IntLiteral or Id behind", tok.Text()))
+//		}
+//	}
+//	return
+//}
 
 func (p *Parser) multiplicationExpr(tokens *token.List) (node *ast.Node) {
 	child1 := p.primary(tokens)
@@ -172,15 +224,23 @@ func (p *Parser) multiplicationExpr(tokens *token.List) (node *ast.Node) {
 		return
 	}
 	if tok.Type() == token.Mul || tok.Type() == token.Div {
-		node = ast.NewNode(ast.Multiplicative, tok.Text())
-		tokens.Next()
+		opNode := ast.NewNode(ast.Multiplicative, tok.Text())
+		tokens.Next() // 消耗掉 '*' or '/'
 		child2 := p.multiplicationExpr(tokens)
-		if child2 != nil {
-			node.AddChild(child1)
-			node.AddChild(child2)
+		if child2 != nil { // 如果 child2 为空，说明语法错误 (算数运算右结合)
+			opNode.AddChild(child1)
+			if len(child2.Children()) > 1 { // 如果 child2 子元素超过 1 个, 需要修改优先级
+				leftChild := child2.ChildrenIndexOf(0)
+				opNode.AddChild(leftChild)
+				child2.SetChildren(0, opNode)
+				opNode = child2
+			} else {
+				opNode.AddChild(child2)
+			}
 		} else {
 			panic(fmt.Sprintf("%s '%s'", "excepting IntLiteral or Id behind", tok.Text()))
 		}
+		node = opNode
 	}
 	return
 }
