@@ -107,15 +107,9 @@ func (r *runtime) evaluate(node *ast.Node) (res *int) {
 	case ast.Additive:
 		child1 := node.ChildrenIndexOf(0)
 		v1 := r.evaluate(child1)
-		if v1 == nil {
-			return
-		}
 
 		child2 := node.ChildrenIndexOf(1)
 		v2 := r.evaluate(child2)
-		if v2 == nil {
-			return
-		}
 
 		if node.Text() == "+" {
 			value = *v1 + *v2
@@ -126,21 +120,14 @@ func (r *runtime) evaluate(node *ast.Node) (res *int) {
 	case ast.Multiplicative:
 		child1 := node.ChildrenIndexOf(0)
 		v1 := r.evaluate(child1)
-		if v1 == nil {
-			return
-		}
 
 		child2 := node.ChildrenIndexOf(1)
 		v2 := r.evaluate(child2)
-		if v2 == nil {
-			return
-		}
 
 		if node.Text() == "*" {
 			value = *v1 * *v2
 		} else if *v2 == 0 {
-			fmt.Printf("can't division zero\n")
-			return
+			panic(fmt.Sprintf("can't division zero\n"))
 		} else {
 			value = *v1 / *v2
 		}
@@ -150,27 +137,15 @@ func (r *runtime) evaluate(node *ast.Node) (res *int) {
 			value = v
 			res = &value
 		} else {
-			fmt.Println(err)
-			return
+			panic(fmt.Sprintf("%s", err))
 		}
 	case ast.IntLiteral:
-		value, r.err = strconv.Atoi(node.Text())
-		if raiseIfErr(r.err, "") {
-			return nil
+		var err error
+		value, err = strconv.Atoi(node.Text())
+		if err != nil {
+			panic(err)
 		}
 		res = &value
 	}
 	return
-}
-
-func raiseIfErr(err error, errStr string) bool {
-	if err != nil {
-		if errStr != "" {
-			fmt.Printf("%s\n", errStr)
-		} else {
-			fmt.Printf("%s\n", err)
-		}
-		return true
-	}
-	return false
 }

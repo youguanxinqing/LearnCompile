@@ -157,15 +157,15 @@ func (p *Parser) addictionExpr(tokens *token.List) (node *ast.Node) {
 			node.AddChild(child1)
 			node.AddChild(child2)
 		} else {
-			fmt.Printf("%s '%s'\n", "excepting IntLiteral or Id behind", tok.Text())
+			panic(fmt.Sprintf("%s '%s'", "excepting IntLiteral, Id or expression behind", tok.Text()))
 		}
 	}
 	return
 }
 
 func (p *Parser) multiplicationExpr(tokens *token.List) (node *ast.Node) {
-	node = p.primary(tokens)
-	child1 := node
+	child1 := p.primary(tokens)
+	node = child1
 
 	tok := tokens.Peek()
 	if tok == nil {
@@ -179,11 +179,13 @@ func (p *Parser) multiplicationExpr(tokens *token.List) (node *ast.Node) {
 			node.AddChild(child1)
 			node.AddChild(child2)
 		} else {
-			fmt.Printf("%s '%s'\n", "excepting IntLiteral or Id behind", tok.Text())
+			panic(fmt.Sprintf("%s '%s'", "excepting IntLiteral or Id behind", tok.Text()))
 		}
 	}
 	return
 }
+
+var HasLeftParenthesis = false
 
 func (p *Parser) primary(tokens *token.List) (node *ast.Node) {
 	tok := tokens.Peek()
@@ -196,7 +198,25 @@ func (p *Parser) primary(tokens *token.List) (node *ast.Node) {
 		node = ast.NewNode(ast.IntLiteral, tok.Text())
 	case token.Id:
 		node = ast.NewNode(ast.Identifier, tok.Text())
+	case token.LeftParenthesis:
+		HasLeftParenthesis = true
+		tokens.Next() // 消耗左括号
+		node = p.addictionExpr(tokens)
+		if node == nil {
+			panic(fmt.Sprintf("%s", "excepted expression within parenthese"))
+		}
+		tok = tokens.Peek()
+		if tok == nil || tok.Type() != token.RightParenthesis {
+			panic(fmt.Sprintf("%s", "excepted right parenthesis"))
+		}
+	case token.RightParenthesis:
+		if HasLeftParenthesis {
+			HasLeftParenthesis = false
+		} else {
+			panic(fmt.Sprintf("%s", "excepted left parenthesis"))
+		}
 	}
+
 	tokens.Next()
 	return
 }

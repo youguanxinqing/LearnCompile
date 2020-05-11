@@ -41,6 +41,10 @@ func isOperator(ch byte) bool {
 	}
 }
 
+func isParentheses(ch byte) bool {
+	return ch == '(' || ch == ')'
+}
+
 func isSemi(ch byte) bool {
 	return ch == ';'
 }
@@ -153,6 +157,15 @@ func (l *Lexer) initToken(ch byte) {
 		l.tokTextAppend(ch)
 	} else if isSemi(ch) {
 		l.tokenType = token.Semi
+		l.state = state.Init
+		l.tokTextAppend(ch)
+	} else if isParentheses(ch) {
+		switch ch {
+		case '(':
+			l.tokenType = token.LeftParenthesis
+		case ')':
+			l.tokenType = token.RightParenthesis
+		}
 		l.state = state.Init
 		l.tokTextAppend(ch)
 	}

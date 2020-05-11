@@ -3,16 +3,18 @@ package token
 type Type int
 
 const (
-	Int Type = iota
-	Assignment // '='
-	Add  // '+'
-	Sub  // '-'
-	Mul  // '*'
-	Div  // '/'
-	Semi // semicolon ';'
-	IntLiteral  // 0-9
-	Id  // 标识符
-	UnKnown // 未知
+	Int              Type = iota
+	Assignment            // '='
+	Add                   // '+'
+	Sub                   // '-'
+	Mul                   // '*'
+	Div                   // '/'
+	Semi                  // semicolon ';'
+	IntLiteral            // 0-9
+	Id                    // 标识符
+	LeftParenthesis       // '('
+	RightParenthesis      // ')'
+	UnKnown               // 未知
 )
 
 func (t *Type) String() string {
@@ -29,8 +31,9 @@ func (t *Type) String() string {
 		return "IntLiteral"
 	case Id:
 		return "Id"
+	case LeftParenthesis, RightParenthesis:
+		return "Parentheses"
 	default:
 		return "UnKnown"
 	}
 }
-
